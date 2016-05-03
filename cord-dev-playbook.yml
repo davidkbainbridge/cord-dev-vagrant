@@ -1,0 +1,56 @@
+---
+- hosts: all
+  vars:
+    oracle_java_version: 8
+    gradle_version: "2.13"
+    gradle_zipfile: "gradle-{{gradle_version}}-all.zip"
+    gradle_folder:  "gradle-{{gradle_version}}"
+    ansible_cache_dir: "/tmp"
+
+  tasks:
+
+  - name: Install add-apt-repostory
+    become: yes
+    apt: name=software-properties-common state=latest
+
+  - name: Add Oracle Java Repository
+    become: yes
+    apt_repository: repo='ppa:webupd8team/java' update_cache=yes
+
+  - name: Accept Java 8 License
+    become: yes
+    debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+
+  - name: Install Oracle Java 8
+    become: yes
+    apt: name={{item}} state=latest
+    with_items:
+      - oracle-java8-installer
+      - ca-certificates
+      - oracle-java8-set-default
+      - unzip
+      - git
+
+  - name: Gradle Archive
+    stat: path="{{ ansible_cache_dir }}/{{ gradle_zipfile }}"
+    register: gradle_archive
+
+  - name: Download Gradle {{gradle_version}}
+    get_url: dest="{{ ansible_cache_dir }}" url=https://services.gradle.org/distributions/{{gradle_zipfile}}
+    become: yes
+    when: gradle_archive.stat.exists == False
+    tags: [gradle]
+
+#  - name: Target Directory
+#    become: yes
+#    file: path="/usr/local/share/{{ gradle_folder }}" state=directory
+
+  - name: Extract Gradle
+    become: yes
+    unarchive: src="{{ ansible_cache_dir }}/{{ gradle_zipfile }}" dest="/usr/local/share" copy=no creates="/usr/local/share/{{ gradle_folder }}"
+    tags: [gradle]
+
+  - name: Add Gradle executable symlink to path
+    file: src="/usr/local/share/{{ gradle_folder }}/bin/gradle" dest="/usr/local/bin/gradle" state=link
+    become: yes
+    tags: [gradle]
