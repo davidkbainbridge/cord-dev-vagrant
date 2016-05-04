@@ -1,0 +1,14 @@
+---
+- name: Prerequisites
+  become: yes
+  apt: name=unzip state=latest update_cache=yes
+
+- name: Gradle Archive
+  become: yes
+  unarchive: src="https://services.gradle.org/distributions/{{gradle_zipfile}}" dest="/usr/local/share" copy=no creates="/usr/local/share/{{ gradle_folder }}"
+  tags: [gradle]
+
+- name: Gradle Executable Symlink
+  become: yes
+  file: src="/usr/local/share/{{ gradle_folder }}/bin/gradle" dest="/usr/local/bin/gradle" state=link
+  tags: [gradle]

@@ -1,0 +1,10 @@
+---
+- name: Golang Archive
+  become: yes
+  unarchive: src="https://storage.googleapis.com/golang/{{ golang_archive_file }}" dest="/usr/local" copy=no creates="/usr/local/go"
+  tags: [golang]
+
+- name: Golang Symlink
+  become: yes
+  file: src="/usr/local/go/bin/go" dest="/usr/local/bin/go" state=link
+  tags: [golang]

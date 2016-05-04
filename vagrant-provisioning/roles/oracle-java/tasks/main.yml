@@ -1,0 +1,20 @@
+---
+- name: Repository Tools
+  become: yes
+  apt: name=software-properties-common state=latest
+
+- name: Oracle Java Repository
+  become: yes
+  apt_repository: repo='ppa:webupd8team/java' update_cache=yes
+
+- name: Java License
+  become: yes
+  debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+
+- name: Oracle Java 8
+  become: yes
+  apt: name={{item}} state=latest
+  with_items:
+    - oracle-java8-installer
+    - ca-certificates
+    - oracle-java8-set-default

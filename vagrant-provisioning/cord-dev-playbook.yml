@@ -1,0 +1,8 @@
+---
+- hosts: devmachines
+  roles:
+  - development
+  - gradle
+  - oracle-java
+  - golang
+  - docker

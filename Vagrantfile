@@ -14,10 +14,6 @@ Vagrant.configure(2) do |config|
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "ubuntu/trusty64"
 
-  config.vm.hostname = "cord-dev"
-
-  config.vm.synced_folder ".", "/opencord"
-
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
@@ -47,14 +43,17 @@ Vagrant.configure(2) do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
+  config.vm.provider "virtualbox" do |vb|
+      # Display the VirtualBox GUI when booting the machine
+      vb.gui = false
+
+      # Customize the number of CPUs
+      vb.cpus = 2
+   
+      # Customize the amount of memory on the VM:
+      vb.memory = "2048"
+  end
+  
   # View the documentation for the provider you are using for more
   # information on available options.
 
@@ -65,9 +64,23 @@ Vagrant.configure(2) do |config|
   #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
   # end
   #
-  config.vm.define "cord-dev", primary: true  do |corddev|
-      config.vm.provision "ansible" do |ansible|
-          ansible.playbook = "cord-dev-playbook.yml"
-      end
+  config.vm.define "cord-dev", primary: true, autostart: true do |cord_dev|
+     cord_dev.vm.hostname = "cord-dev"
+     cord_dev.vm.synced_folder ".", "/opencord" 
+  end
+
+  config.vm.define "cord-alt-1", primary: false, autostart: false do |cord_alt_1|
+     cord_alt_1.vm.hostname = "cord-alt-1"
+  end
+
+  config.vm.define "cord-alt-2", primary: false, autostart: false do |cord_alt_2|
+    cord_alt_2.vm.hostname = "cord-alt-2"
+  end
+
+  config.vm.provision "ansible" do |ansible|
+      ansible.playbook = "vagrant-provisioning/cord-dev-playbook.yml"
+      ansible.groups = {
+          "devmachines" => ["cord-dev", "cord-alt-1"]
+      }
   end
 end

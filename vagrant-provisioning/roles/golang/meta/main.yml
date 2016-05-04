@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  author: David Bainbridge
+  description: Go Programming Language
+  platforms:
+    - name: Ubuntu
+      versions:
+        - trusty
+
+dependencies: []
